@@ -1,0 +1,19 @@
+# Large source data, annotations, model artifacts and local results
+data/
+results/
+pairs*.json
+*.mp4
+*.pth
+*.pt
+*.safetensors
+
+# Python and local configuration
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+.env.*
+.DS_Store
+tmp_frames/
+

@@ -1,0 +1,7 @@
+# Install a CUDA-capable PyTorch build for your GPU separately, then these tools.
+numpy
+opencv-python
+Pillow
+transformers
+huggingface_hub
+
