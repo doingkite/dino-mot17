@@ -48,6 +48,21 @@ class TestMOT17Pipeline(unittest.TestCase):
         self.assertEqual(result["n_frame_pairs"], 1)
         self.assertEqual(result["pck_at_010"], .5)
 
+    def test_summary_reports_static_baseline_by_gap(self):
+        base = {"source_frame": 1, "source_roi": [0, 0, 10, 10], "target_roi": [0, 0, 10, 10],
+                "pixel_error_original": 3, "pck_at_005": True, "pck_at_010": True,
+                "within_16px_model_input": True, "cycle_consistent_strict": True,
+                "cycle_consistent_within_one_patch": True, "baseline_static_pck_at_005": True,
+                "baseline_static_pck_at_010": True, "baseline_center_pck_at_005": False,
+                "baseline_center_pck_at_010": False, "baseline_static_error_original": 2}
+        rows = [{**base, "target_frame": 16, "gap": 15},
+                {**base, "target_frame": 61, "gap": 60, "baseline_static_pck_at_005": False,
+                 "baseline_static_error_original": 30}]
+        result = summarize(rows)
+        self.assertEqual(result["by_gap"]["15"]["baseline_static_pck_at_005"], 1.0)
+        self.assertEqual(result["by_gap"]["60"]["baseline_static_pck_at_005"], 0.0)
+        self.assertEqual(result["median_pixel_error_static_baseline"], 16)
+
 
 if __name__ == "__main__":
     unittest.main()

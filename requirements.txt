@@ -4,4 +4,5 @@ opencv-python
 Pillow
 transformers
 huggingface_hub
-
+# optional: learned-matcher baselines (hpatches_spatial_eval.py --methods LoFTR LightGlue)
+# kornia

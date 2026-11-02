@@ -1,12 +1,16 @@
 # DINOv3 × MOT17: 같은 보행자 내부의 지점 매칭
 
-![Status: code and CPU tests complete](https://img.shields.io/badge/status-code%20ready%20%7C%20GPU%20evaluation%20pending-yellow)
+> **v2 (2026-11-02):** 수정 사항, 이미 확인한 결과, 추가 실험 실행 방법은 [EXPERIMENTS_V2.md](EXPERIMENTS_V2.md)에 정리했다.
+
+> 공간비전 후속 실험: [HPatches 시점 변화에서 DINOv3 × SIFT 평면 정합](HPATCHES_EXPERIMENT.md). 두 이미지 대응점·RANSAC·정답 호모그래피 비교 코드는 [`hpatches_spatial_eval.py`](hpatches_spatial_eval.py)에 있다. 실제 HPatches GPU 수치는 아직 생성되지 않았다.
+
+![Status: MOT17 pilot completed, HPatches evaluation pending](https://img.shields.io/badge/status-MOT17%20pilot%20done%20%7C%20HPatches%20pending-yellow)
 
 ## 목표와 현재 상태
 
 같은 사람이 찍힌 두 프레임에서, 첫 프레임의 옷이나 가방에 고른 물리적 지점을 두 번째 프레임에서도 찾을 수 있을까? 사전 학습된 **DINOv3 ViT-S/16**의 패치 특징을 추출해 코사인 유사도가 가장 높은 패치를 예측점으로 사용한다. 인물 ROI와 정답점은 **사람이 예측을 보기 전에 표시**한다. 이 실험은 사람 검출·ID 추적·학습·가상 피팅이 아니다.
 
-코드와 CPU 단위 테스트는 준비됐다. **실제 MOT17 영상·DINOv3 가중치를 이용한 추론, 성능 숫자와 데모는 아직 생성되지 않았다.** 재현 절차는 아래 순서대로 진행한다.
+코드와 CPU 단위 테스트는 준비됐다. 사용자 Windows RTX 4080에서 **MOT17-09의 121→136 프레임, 동일 인물 3점 파일럿**을 실행했다. 제공받은 `summary.json`에 따르면 DINOv3 PCK@0.05=3/3, PCK@0.10=3/3, 단순 상대 위치 기준선 PCK@0.10=3/3(동률), 원본 픽셀 오차 중앙값 13.12px이다. 한 사람·한 프레임 쌍의 파일럿이며 일반 성능이나 DINOv3 우월성을 뜻하지 않는다. 발표용 공간 정합 결과는 별도 [HPatches 실험](HPATCHES_EXPERIMENT.md)에서 측정해야 한다. 재현 절차는 아래 순서대로 진행한다.
 
 ## 입력 영상과 출처
 
@@ -112,8 +116,8 @@ Get-Content results\mot17_vits16_448\summary.json
 ## 재현 상태
 
 - [x] 독립 저장소 구조, 지표 보정, 여백 검사, 다점 평가, 간단한 기준선, CPU 테스트
-- [ ] 실제 MOT17에서 동일 인물·점 주석을 확보
-- [ ] RTX 4080에서 DINOv3 추론 후 `summary.json`과 그림 검수
+- [x] 사용자 PC에서 MOT17 동일 인물·점 주석 확보(121→136, 3점 파일럿)
+- [x] 사용자 RTX 4080에서 DINOv3 파일럿 추론, 제공된 `summary.json`과 그림 검수
 - [ ] 동일한 점으로 후속 비교 모델 평가 및 발표 자료 정리
 
-실제 파일이 없는 환경에서 결과 숫자를 추측하거나 완료로 표시하지 않는다.
+주석 JSON과 실제 결과 파일은 사용자 PC에 있으며 이 저장소에는 포함하지 않는다. 여기서 직접 재실행해 확인한 수치와 사용자가 제공한 결과는 구분한다. 실제 파일이 없는 환경에서 후속 실험의 결과 숫자를 추측하거나 완료로 표시하지 않는다.

@@ -21,13 +21,27 @@ def summarize(rows):
         raise ValueError("No labelled points")
     metrics = ("pck_at_005", "pck_at_010", "within_16px_model_input",
                "cycle_consistent_strict", "cycle_consistent_within_one_patch",
-               "baseline_static_pck_at_010", "baseline_center_pck_at_010")
-    return {"n_points": n, "n_frame_pairs": len({(r["source_frame"], r["target_frame"]) for r in rows}),
-            "n_person_roi_pairs": len({(r["source_frame"], r["target_frame"],
-                                         tuple(r["source_roi"]), tuple(r["target_roi"])) for r in rows}),
-            "median_pixel_error_original": statistics.median(r["pixel_error_original"] for r in rows),
-            "pck_denominator": "max(target ROI height, target ROI width)",
-            **{key: sum(bool(r[key]) for r in rows) / n for key in metrics}}
+               "baseline_static_pck_at_005", "baseline_static_pck_at_010",
+               "baseline_center_pck_at_005", "baseline_center_pck_at_010")
+    summary = {"n_points": n, "n_frame_pairs": len({(r["source_frame"], r["target_frame"]) for r in rows}),
+               "n_person_roi_pairs": len({(r["source_frame"], r["target_frame"],
+                                            tuple(r["source_roi"]), tuple(r["target_roi"])) for r in rows}),
+               "median_pixel_error_original": statistics.median(r["pixel_error_original"] for r in rows),
+               "pck_denominator": "max(target ROI height, target ROI width)",
+               **{key: sum(bool(r[key]) for r in rows) / n for key in metrics if key in rows[0]}}
+    if "baseline_static_error_original" in rows[0]:
+        summary["median_pixel_error_static_baseline"] = statistics.median(
+            r["baseline_static_error_original"] for r in rows)
+    if "gap" in rows[0]:
+        by_gap = {}
+        for gap in sorted({r["gap"] for r in rows}):
+            group = [r for r in rows if r["gap"] == gap]
+            by_gap[str(gap)] = {"n_points": len(group),
+                                **{key: sum(bool(r[key]) for r in group) / len(group)
+                                   for key in ("pck_at_005", "pck_at_010", "baseline_static_pck_at_005",
+                                               "baseline_static_pck_at_010") if key in group[0]}}
+        summary["by_gap"] = by_gap
+    return summary
 
 
 def main():
@@ -156,7 +170,11 @@ def main():
                "target_patch": [int(bx), int(by)],
                "cycle_consistent_strict": bool((rx, ry) == (qx, qy)),
                "cycle_consistent_within_one_patch": bool(max(abs(rx - qx), abs(ry - qy)) <= 1),
+               "gap": f1 - f0,
+               "baseline_static_error_original": baseline_static["pixel_error_original"],
+               "baseline_static_pck_at_005": baseline_static["pck_at_005"],
                "baseline_static_pck_at_010": baseline_static["pck_at_010"],
+               "baseline_center_pck_at_005": baseline_center["pck_at_005"],
                "baseline_center_pck_at_010": baseline_center["pck_at_010"],
                **metrics}
         rows.append(row)
