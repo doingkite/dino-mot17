@@ -17,3 +17,5 @@ __pycache__/
 .DS_Store
 tmp_frames/
 
+
+_backup_before_v2/
